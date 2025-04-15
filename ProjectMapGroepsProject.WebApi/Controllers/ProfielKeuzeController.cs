@@ -63,6 +63,7 @@ namespace ProjectMap.WebApi.Controllers
             }
         }
 
+        //To Do:Error code here
         [HttpPost(Name = "CreateProfielKeuze")]
         public async Task<ActionResult> Add([FromBody] ProfielKeuze profielKeuze)
         {
@@ -77,7 +78,7 @@ namespace ProjectMap.WebApi.Controllers
                 var existingProfielen = await _profielKeuzeRepository.GetProfielKeuzesByUserIdAsync(Guid.Parse(userId));
                 if (existingProfielen.Count() >= 6)
                 {
-                    return BadRequest("Er kunnen maximaal 3 profielen aangemaakt worden.");
+                    return BadRequest("Er kunnen maximaal 6 profielen aangemaakt worden.");
                 }
 
                 profielKeuze.Id = Guid.NewGuid();
