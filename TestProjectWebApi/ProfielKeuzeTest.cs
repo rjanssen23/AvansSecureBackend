@@ -13,19 +13,19 @@ using Assert = Xunit.Assert;
 namespace TestProjectWebApi
 {
     [TestClass]
-    public class ProfielKeuzeControllerTests
+    public class EnvironmentControllerTests
     {
-        private readonly Mock<IProfielKeuzeRepository> _mockRepo;
-        private readonly Mock<ILogger<ProfielKeuzeController>> _mockLogger;
+        private readonly Mock<IEnvironmentRepository> _mockRepo;
+        private readonly Mock<ILogger<EnvironmentController>> _mockLogger;
         private readonly Mock<IAuthenticationService> _mockAuthService;
-        private readonly ProfielKeuzeController _controller;
+        private readonly EnvironmentController _controller;
 
-        public ProfielKeuzeControllerTests()
+        public EnvironmentControllerTests()
         {
-            _mockRepo = new Mock<IProfielKeuzeRepository>();
-            _mockLogger = new Mock<ILogger<ProfielKeuzeController>>();
+            _mockRepo = new Mock<IEnvironmentRepository>();
+            _mockLogger = new Mock<ILogger<EnvironmentController>>();
             _mockAuthService = new Mock<IAuthenticationService>();
-            _controller = new ProfielKeuzeController(_mockRepo.Object, _mockLogger.Object, _mockAuthService.Object);
+            _controller = new EnvironmentController(_mockRepo.Object, _mockLogger.Object, _mockAuthService.Object);
         }
 
         [TestMethod]
@@ -48,9 +48,9 @@ namespace TestProjectWebApi
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var profielKeuzes = new List<ProfielKeuze> { new ProfielKeuze { Id = Guid.NewGuid() } };
+            var profielKeuzes = new List<ProjectMap.WebApi.Models.Environment> { new ProjectMap.WebApi.Models.Environment { Id = Guid.NewGuid() } };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
-            _mockRepo.Setup(repo => repo.GetProfielKeuzesByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(profielKeuzes);
+            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(profielKeuzes);
 
             // Act
             var result = await _controller.Get();
@@ -62,14 +62,14 @@ namespace TestProjectWebApi
 
         [TestMethod]
         [Fact]
-        public async Task Get_WithId_ReturnsNotFound_WhenProfielKeuzeDoesNotExist()
+        public async Task Get_WithId_ReturnsNotFound_WhenEnvironmentDoesNotExist()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync((ProfielKeuze)null);
+            var environmentId = Guid.NewGuid();
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
 
             // Act
-            var result = await _controller.Get(profielKeuzeId);
+            var result = await _controller.Get(environmentId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result.Result);
@@ -77,19 +77,19 @@ namespace TestProjectWebApi
 
         [TestMethod]
         [Fact]
-        public async Task Get_WithId_ReturnsOk_WithProfielKeuze()
+        public async Task Get_WithId_ReturnsOk_WithEnvironment()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            var profielKeuze = new ProfielKeuze { Id = profielKeuzeId };
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync(profielKeuze);
+            var environmentId = Guid.NewGuid();
+            var environments = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(environments);
 
             // Act
-            var result = await _controller.Get(profielKeuzeId);
+            var result = await _controller.Get(environmentId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(profielKeuze, okResult.Value);
+            Assert.Equal(environments, okResult.Value);
         }
 
         [TestMethod]
@@ -100,7 +100,7 @@ namespace TestProjectWebApi
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns((string)null);
 
             // Act
-            var result = await _controller.Add(new ProfielKeuze());
+            var result = await _controller.Add(new ProjectMap.WebApi.Models.Environment());
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -112,50 +112,50 @@ namespace TestProjectWebApi
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var existingProfielen = new List<ProfielKeuze> { new ProfielKeuze(), new ProfielKeuze(), new ProfielKeuze(), new ProfielKeuze(), new ProfielKeuze(), new ProfielKeuze() };
+            var existingEnvironments = new List<ProjectMap.WebApi.Models.Environment> { new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment() };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
-            _mockRepo.Setup(repo => repo.GetProfielKeuzesByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(existingProfielen);
+            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(existingEnvironments);
 
             // Act
-            var result = await _controller.Add(new ProfielKeuze());
+            var result = await _controller.Add(new ProjectMap.WebApi.Models.Environment());
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Er kunnen maximaal 6 profielen aangemaakt worden.", badRequestResult.Value);
+            Assert.Equal("Er kunnen maximaal 3 environments aangemaakt worden.", badRequestResult.Value);
         }
 
         [TestMethod]
         [Fact]
-        public async Task Add_ReturnsCreatedAtRoute_WithNewProfielKeuze()
+        public async Task Add_ReturnsCreatedAtRoute_WithNewEnvironment()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var profielKeuze = new ProfielKeuze { Name = "Test" };
-            var createdProfielKeuze = new ProfielKeuze { Id = Guid.NewGuid(), Name = "Test" };
+            var environment = new ProjectMap.WebApi.Models.Environment { Name = "Test" };
+            var createdEnvironment = new ProjectMap.WebApi.Models.Environment { Id = Guid.NewGuid(), Name = "Test" };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
-            _mockRepo.Setup(repo => repo.GetProfielKeuzesByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(new List<ProfielKeuze>());
-            _mockRepo.Setup(repo => repo.InsertAsync(It.IsAny<ProfielKeuze>())).ReturnsAsync(createdProfielKeuze);
+            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(new List<ProjectMap.WebApi.Models.Environment>());
+            _mockRepo.Setup(repo => repo.InsertAsync(It.IsAny<ProjectMap.WebApi.Models.Environment>())).ReturnsAsync(createdEnvironment);
 
             // Act
-            var result = await _controller.Add(profielKeuze);
+            var result = await _controller.Add(environment);
 
             // Assert
             var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(result);
-            Assert.Equal("ReadProfielKeuze", createdAtRouteResult.RouteName);
-            Assert.Equal(createdProfielKeuze.Id, createdAtRouteResult.RouteValues["profielKeuzeId"]);
-            Assert.Equal(createdProfielKeuze, createdAtRouteResult.Value);
+            Assert.Equal("ReadEnvironment", createdAtRouteResult.RouteName);
+            Assert.Equal(createdEnvironment.Id, createdAtRouteResult.RouteValues["profielKeuzeId"]);
+            Assert.Equal(createdEnvironment, createdAtRouteResult.Value);
         }
 
         [TestMethod]
         [Fact]
-        public async Task Update_ReturnsNotFound_WhenProfielKeuzeDoesNotExist()
+        public async Task Update_ReturnsNotFound_WhenEnvironmentDoesNotExist()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync((ProfielKeuze)null);
+            var environmentId = Guid.NewGuid();
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
 
             // Act
-            var result = await _controller.Update(profielKeuzeId, new ProfielKeuze());
+            var result = await _controller.Update(environmentId, new ProjectMap.WebApi.Models.Environment());
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -163,33 +163,33 @@ namespace TestProjectWebApi
 
         [TestMethod]
         [Fact]
-        public async Task Update_ReturnsOk_WithUpdatedProfielKeuze()
+        public async Task Update_ReturnsOk_WithUpdatedEnvironment()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            var existingProfielKeuze = new ProfielKeuze { Id = profielKeuzeId };
-            var newProfielKeuze = new ProfielKeuze { Id = profielKeuzeId, Name = "Updated" };
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync(existingProfielKeuze);
-            _mockRepo.Setup(repo => repo.UpdateAsync(newProfielKeuze)).Returns(Task.CompletedTask);
+            var environmentId = Guid.NewGuid();
+            var existingEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
+            var newEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId, Name = "Updated" };
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(existingEnvironment);
+            _mockRepo.Setup(repo => repo.UpdateAsync(newEnvironment)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Update(profielKeuzeId, newProfielKeuze);
+            var result = await _controller.Update(environmentId, newEnvironment);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(newProfielKeuze, okResult.Value);
+            Assert.Equal(newEnvironment, okResult.Value);
         }
 
         [TestMethod]
         [Fact]
-        public async Task Delete_ReturnsNotFound_WhenProfielKeuzeDoesNotExist()
+        public async Task Delete_ReturnsNotFound_WhenEnvironmentDoesNotExist()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync((ProfielKeuze)null);
+            var environmentId = Guid.NewGuid();
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
 
             // Act
-            var result = await _controller.Delete(profielKeuzeId);
+            var result = await _controller.Delete(environmentId);
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -197,16 +197,16 @@ namespace TestProjectWebApi
 
         [TestMethod]
         [Fact]
-        public async Task Delete_ReturnsOk_WhenProfielKeuzeIsDeleted()
+        public async Task Delete_ReturnsOk_WhenEnvironmentIsDeleted()
         {
             // Arrange
-            var profielKeuzeId = Guid.NewGuid();
-            var existingProfielKeuze = new ProfielKeuze { Id = profielKeuzeId };
-            _mockRepo.Setup(repo => repo.ReadAsync(profielKeuzeId)).ReturnsAsync(existingProfielKeuze);
-            _mockRepo.Setup(repo => repo.DeleteAsync(profielKeuzeId)).Returns(Task.CompletedTask);
+            var environmentId = Guid.NewGuid();
+            var existingEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(existingEnvironment);
+            _mockRepo.Setup(repo => repo.DeleteAsync(environmentId)).Returns(Task.CompletedTask);
 
             // Act
-            var result = await _controller.Delete(profielKeuzeId);
+            var result = await _controller.Delete(environmentId);
 
             // Assert
             Assert.IsType<OkResult>(result);

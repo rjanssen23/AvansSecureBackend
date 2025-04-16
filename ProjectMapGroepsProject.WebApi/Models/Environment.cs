@@ -1,9 +1,10 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectMap.WebApi.Models
 {
-    public class ProfielKeuze
+    public class Environment
     {
         [Key]
         public Guid Id { get; set; }
@@ -12,8 +13,7 @@ namespace ProjectMap.WebApi.Models
         [StringLength(50)]
         public string? Name { get; set; }
 
-
         [ForeignKey("UserId")]
-        public Guid UserId { get; set; } // Navigatie-eigenschap
+        public Guid UserId { get; set; } // Navigational property to User
     }
 }

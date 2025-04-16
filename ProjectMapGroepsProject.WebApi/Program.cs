@@ -16,7 +16,7 @@ var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionS
 var sqlConnectionStringFound = !string.IsNullOrWhiteSpace(sqlConnectionString);
 
 // Register repositories
-builder.Services.AddTransient<IProfielKeuzeRepository, ProfielKeuzeRepository>(o => new ProfielKeuzeRepository(sqlConnectionString));
+builder.Services.AddTransient<IEnvironmentRepository, EnvironmentRepository>(o => new EnvironmentRepository(sqlConnectionString));
 
 // Register other services
 builder.Services.AddAuthorization(options =>
