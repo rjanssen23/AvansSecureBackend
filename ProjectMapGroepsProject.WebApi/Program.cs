@@ -16,14 +16,14 @@ var sqlConnectionString = builder.Configuration.GetValue<string>("SqlConnectionS
 var sqlConnectionStringFound = !string.IsNullOrWhiteSpace(sqlConnectionString);
 
 // Register repositories
-builder.Services.AddTransient<IEnvironmentRepository, EnvironmentRepository>(o => new EnvironmentRepository(sqlConnectionString));
+builder.Services.AddTransient<IEnvironmentRepository, UserEnvironmentRepository>(o => new UserEnvironmentRepository(sqlConnectionString));
 
 // Register other services
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("profielKeuzeId", policy =>
+    options.AddPolicy("environmentId", policy =>
     {
-        policy.RequireClaim("Profiel");
+        policy.RequireClaim("Environment");
         policy.RequireClaim("Profielkeuze", "8"); //Ik weet niet wat ik in de positie van die 8 moet zetten.
     });
 });

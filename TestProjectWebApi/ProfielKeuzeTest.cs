@@ -48,7 +48,7 @@ namespace TestProjectWebApi
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var profielKeuzes = new List<ProjectMap.WebApi.Models.Environment> { new ProjectMap.WebApi.Models.Environment { Id = Guid.NewGuid() } };
+            var profielKeuzes = new List<ProjectMap.WebApi.Models.UserEnvironment> { new ProjectMap.WebApi.Models.UserEnvironment { Id = Guid.NewGuid() } };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
             _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(profielKeuzes);
 
@@ -66,7 +66,7 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.UserEnvironment>((ProjectMap.WebApi.Models.UserEnvironment)null);
 
             // Act
             var result = await _controller.Get(environmentId);
@@ -81,7 +81,7 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            var environments = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
+            var environments = new ProjectMap.WebApi.Models.UserEnvironment { Id = environmentId };
             _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(environments);
 
             // Act
@@ -100,7 +100,7 @@ namespace TestProjectWebApi
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns((string)null);
 
             // Act
-            var result = await _controller.Add(new ProjectMap.WebApi.Models.Environment());
+            var result = await _controller.Add(new ProjectMap.WebApi.Models.UserEnvironment());
 
             // Assert
             Assert.IsType<UnauthorizedResult>(result);
@@ -112,12 +112,12 @@ namespace TestProjectWebApi
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var existingEnvironments = new List<ProjectMap.WebApi.Models.Environment> { new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment(), new ProjectMap.WebApi.Models.Environment() };
+            var existingEnvironments = new List<ProjectMap.WebApi.Models.UserEnvironment> { new ProjectMap.WebApi.Models.UserEnvironment(), new ProjectMap.WebApi.Models.UserEnvironment(), new ProjectMap.WebApi.Models.UserEnvironment(), new ProjectMap.WebApi.Models.UserEnvironment(), new ProjectMap.WebApi.Models.UserEnvironment(), new ProjectMap.WebApi.Models.UserEnvironment() };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
             _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(existingEnvironments);
 
             // Act
-            var result = await _controller.Add(new ProjectMap.WebApi.Models.Environment());
+            var result = await _controller.Add(new ProjectMap.WebApi.Models.UserEnvironment());
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -126,25 +126,27 @@ namespace TestProjectWebApi
 
         [TestMethod]
         [Fact]
-        public async Task Add_ReturnsCreatedAtRoute_WithNewEnvironment()
+        public async Task Add_ReturnsBadRequest_WhenUserHasMaxEnvironments()
         {
             // Arrange
             var userId = Guid.NewGuid().ToString();
-            var environment = new ProjectMap.WebApi.Models.Environment { Name = "Test" };
-            var createdEnvironment = new ProjectMap.WebApi.Models.Environment { Id = Guid.NewGuid(), Name = "Test" };
+            var existingEnvironments = new List<ProjectMap.WebApi.Models.UserEnvironment>
+    {
+        new ProjectMap.WebApi.Models.UserEnvironment(),
+        new ProjectMap.WebApi.Models.UserEnvironment(),
+        new ProjectMap.WebApi.Models.UserEnvironment()
+    };
             _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
-            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(new List<ProjectMap.WebApi.Models.Environment>());
-            _mockRepo.Setup(repo => repo.InsertAsync(It.IsAny<ProjectMap.WebApi.Models.Environment>())).ReturnsAsync(createdEnvironment);
+            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(existingEnvironments);
 
             // Act
-            var result = await _controller.Add(environment);
+            var result = await _controller.Add(new ProjectMap.WebApi.Models.UserEnvironment());
 
             // Assert
-            var createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(result);
-            Assert.Equal("ReadEnvironment", createdAtRouteResult.RouteName);
-            Assert.Equal(createdEnvironment.Id, createdAtRouteResult.RouteValues["profielKeuzeId"]);
-            Assert.Equal(createdEnvironment, createdAtRouteResult.Value);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Er kunnen maximaal 3 environments aangemaakt worden.", badRequestResult.Value);
         }
+
 
         [TestMethod]
         [Fact]
@@ -152,10 +154,10 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.UserEnvironment>((ProjectMap.WebApi.Models.UserEnvironment)null);
 
             // Act
-            var result = await _controller.Update(environmentId, new ProjectMap.WebApi.Models.Environment());
+            var result = await _controller.Update(environmentId, new ProjectMap.WebApi.Models.UserEnvironment());
 
             // Assert
             Assert.IsType<NotFoundResult>(result);
@@ -167,8 +169,8 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            var existingEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
-            var newEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId, Name = "Updated" };
+            var existingEnvironment = new ProjectMap.WebApi.Models.UserEnvironment { Id = environmentId };
+            var newEnvironment = new ProjectMap.WebApi.Models.UserEnvironment { Id = environmentId, Name = "Updated" };
             _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(existingEnvironment);
             _mockRepo.Setup(repo => repo.UpdateAsync(newEnvironment)).Returns(Task.CompletedTask);
 
@@ -186,7 +188,7 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.Environment>((ProjectMap.WebApi.Models.Environment)null);
+            _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync<IEnvironmentRepository, ProjectMap.WebApi.Models.UserEnvironment>((ProjectMap.WebApi.Models.UserEnvironment)null);
 
             // Act
             var result = await _controller.Delete(environmentId);
@@ -201,7 +203,7 @@ namespace TestProjectWebApi
         {
             // Arrange
             var environmentId = Guid.NewGuid();
-            var existingEnvironment = new ProjectMap.WebApi.Models.Environment { Id = environmentId };
+            var existingEnvironment = new ProjectMap.WebApi.Models.UserEnvironment { Id = environmentId };
             _mockRepo.Setup(repo => repo.ReadAsync(environmentId)).ReturnsAsync(existingEnvironment);
             _mockRepo.Setup(repo => repo.DeleteAsync(environmentId)).Returns(Task.CompletedTask);
 

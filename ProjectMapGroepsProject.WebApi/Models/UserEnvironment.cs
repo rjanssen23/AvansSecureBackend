@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProjectMap.WebApi.Models
 {
-    public class Environment
+    public class UserEnvironment
     {
         [Key]
         public Guid Id { get; set; }

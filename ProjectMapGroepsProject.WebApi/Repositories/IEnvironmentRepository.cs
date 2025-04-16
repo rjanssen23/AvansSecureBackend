@@ -5,9 +5,9 @@ namespace ProjectMap.WebApi.Repositories
     public interface IEnvironmentRepository
     {
         Task DeleteAsync(Guid environmentId);
-        Task<IEnumerable<Models.Environment>> GetEnvironmentsByUserIdAsync(Guid userId);
-        Task<Models.Environment> InsertAsync(Models.Environment environment);
-        Task<Models.Environment> ReadAsync(Guid environmentId);
-        Task UpdateAsync(Models.Environment environment);
+        Task<IEnumerable<Models.UserEnvironment>> GetEnvironmentsByUserIdAsync(Guid userId);
+        Task<Models.UserEnvironment> InsertAsync(Models.UserEnvironment environment);
+        Task<Models.UserEnvironment> ReadAsync(Guid environmentId);
+        Task UpdateAsync(Models.UserEnvironment environment);
     }
 }

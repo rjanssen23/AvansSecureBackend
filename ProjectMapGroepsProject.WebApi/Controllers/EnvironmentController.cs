@@ -24,29 +24,10 @@ namespace ProjectMap.WebApi.Controllers
             _authenticationService = authenticationService;
         }
 
-        [HttpGet(Name = "ReadEnvironments")]
-        public async Task<ActionResult<IEnumerable<Models.Environment>>> Get()
-        {
-            try
-            {
-                var userId = _authenticationService.GetCurrentAuthenticatedUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
 
-                var environments = await _environmentRepository.GetEnvironmentsByUserIdAsync(Guid.Parse(userId));
-                return Ok(environments);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting environments.");
-                return StatusCode(500, "Internal server error");
-            }
-        }
 
         [HttpGet("{environmentId}", Name = "ReadEnvironments")]
-        public async Task<ActionResult<Models.Environment>> Get(Guid EnvironmentId)
+        public async Task<ActionResult<Models.UserEnvironment>> Get(Guid EnvironmentId)
         {
             try
             {
@@ -65,7 +46,7 @@ namespace ProjectMap.WebApi.Controllers
 
         //To Do:Error code here
         [HttpPost(Name = "CreateEnvironment")]
-        public async Task<ActionResult> Add([FromBody] Models.Environment environment)
+        public async Task<ActionResult> Add([FromBody] Models.UserEnvironment environment)
         {
             try
             {
@@ -84,7 +65,8 @@ namespace ProjectMap.WebApi.Controllers
                 environment.Id = Guid.NewGuid();
                 environment.UserId = Guid.Parse(userId); // UserId wordt hier ingesteld
                 var createdEnvironment = await _environmentRepository.InsertAsync(environment);
-                return CreatedAtRoute("ReadEnvironment", new { profielKeuzeId = createdEnvironment.Id }, createdEnvironment);
+                return CreatedAtRoute("ReadEnvironments", new { environmentId = createdEnvironment.Id }, createdEnvironment);
+
             }
             catch (Exception ex)
             {
@@ -94,7 +76,7 @@ namespace ProjectMap.WebApi.Controllers
         }
 
         [HttpPut("{EnvironmentId}", Name = "UpdateEnvironment")]
-        public async Task<ActionResult> Update(Guid EnvironmentId, Models.Environment newEnvironment)
+        public async Task<ActionResult> Update(Guid EnvironmentId, Models.UserEnvironment newEnvironment)
         {
             try
             {
