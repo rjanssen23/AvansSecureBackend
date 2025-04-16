@@ -56,6 +56,7 @@ namespace ProjectMap.WebApi.Controllers
                     return Unauthorized();
                 }
 
+
                 var existingProfielen = await _environmentRepository.GetEnvironmentsByUserIdAsync(Guid.Parse(userId));
                 if (existingProfielen.Count() >= 3)
                 {
@@ -95,6 +96,8 @@ namespace ProjectMap.WebApi.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
+
+ 
 
         [HttpDelete("{environmentId}", Name = "DeleteEnvironment")]
         public async Task<IActionResult> Delete(Guid environmentId)

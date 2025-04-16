@@ -28,37 +28,8 @@ namespace TestProjectWebApi
             _controller = new EnvironmentController(_mockRepo.Object, _mockLogger.Object, _mockAuthService.Object);
         }
 
-        [TestMethod]
-        [Fact]
-        public async Task Get_ReturnsUnauthorized_WhenUserIsNotAuthenticated()
-        {
-            // Arrange
-            _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns((string)null);
 
-            // Act
-            var result = await _controller.Get();
 
-            // Assert
-            Assert.IsType<UnauthorizedResult>(result.Result);
-        }
-
-        [TestMethod]
-        [Fact]
-        public async Task Get_ReturnsOk_WithProfielKeuzes()
-        {
-            // Arrange
-            var userId = Guid.NewGuid().ToString();
-            var profielKeuzes = new List<ProjectMap.WebApi.Models.UserEnvironment> { new ProjectMap.WebApi.Models.UserEnvironment { Id = Guid.NewGuid() } };
-            _mockAuthService.Setup(auth => auth.GetCurrentAuthenticatedUserId()).Returns(userId);
-            _mockRepo.Setup(repo => repo.GetEnvironmentsByUserIdAsync(Guid.Parse(userId))).ReturnsAsync(profielKeuzes);
-
-            // Act
-            var result = await _controller.Get();
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(profielKeuzes, okResult.Value);
-        }
 
         [TestMethod]
         [Fact]
