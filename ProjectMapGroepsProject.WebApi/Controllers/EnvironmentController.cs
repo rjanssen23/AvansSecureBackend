@@ -46,7 +46,7 @@ namespace ProjectMap.WebApi.Controllers
 
         //To Do:Error code here
         [HttpPost(Name = "CreateEnvironment")]
-        public async Task<ActionResult> Add([FromBody] Models.UserEnvironment environment)
+        public async Task<ActionResult> Add(UserEnvironment environment)
         {
             try
             {
